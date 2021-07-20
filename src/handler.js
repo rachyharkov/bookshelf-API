@@ -80,4 +80,15 @@ const addBukuHandler = (request, h) => {
   return response
 }
 
-module.exports = { addBukuHandler }
+const getAllBukuHandler = () => ({
+  status: 'success',
+  data: {
+    books: books.map((book) => ({
+      id: book.id,
+      name: book.name,
+      publisher: book.publisher
+    }))
+  }
+})
+
+module.exports = { addBukuHandler, getAllBukuHandler }
