@@ -80,18 +80,109 @@ const addBukuHandler = (request, h) => {
   return response
 }
 
-const getAllBukuHandler = () => ({
-  status: 'success',
-  data: {
-    books: books.map((book) => (
-      {
-        id: book.id,
-        name: book.name,
-        publisher: book.publisher
+const getAllBukuHandler = (request, h) => {  
+  
+  const { name, reading, finished } = request.query
+
+  if (name || reading || finished) {
+    
+    let booksWithSpecifiedNameAvailable
+
+    if (name) {
+      //experiment with indexOf x filter
+      booksWithSpecifiedNameAvailable = books.filter(b => b.name.toLowerCase().indexOf(name.toLowerCase()) >= 0)
+
+      if (booksWithSpecifiedNameAvailable.length > 0) {
+        const response = h.response({
+          status: 'success',
+          data: {
+            books: booksWithSpecifiedNameAvailable.map((book) => (
+            {
+              id: book.id,
+              name: book.name,
+              publisher: book.publisher
+            }
+          ))
+          }
+        })
+        response.code(200)
+        return response  
       }
-    ))
+    }
+
+    if (reading) {
+      
+      const isReading = reading == 1
+
+      const booksWithSpecifiedReadingStatusAvailable = books.filter(b =>
+    b.reading === isReading)
+
+      if (booksWithSpecifiedReadingStatusAvailable.length > 0) {
+        const response = h.response({
+          status: 'success',
+          data: {
+            books: booksWithSpecifiedReadingStatusAvailable.map((book) => (
+            {
+              id: book.id,
+              name: book.name,
+              publisher: book.publisher
+            }))
+          }
+        })
+        response.code(200)
+        return response
+      }
+    }
+
+    if (finished) {
+      
+      const isfinished = finished == 1
+
+      const booksWithSpecifiedFinishStatusAvailable = books.filter(b =>
+    b.finished === isfinished)
+
+      if (booksWithSpecifiedFinishStatusAvailable.length > 0) {
+        const response = h.response({
+          status: 'success',
+          data: {
+            books: booksWithSpecifiedFinishStatusAvailable.map((book) => (
+            {
+              id: book.id,
+              name: book.name,
+              publisher: book.publisher
+            }))
+          }
+        })
+        response.code(200)
+        return response
+      }
+    }
+
+    if (!booksWithSpecifiedNameAvailable || !booksWithSpecifiedFinishStatusAvailable || !booksWithSpecifiedReadingStatusAvailable) {
+      const response = h.response({
+        status: 'success',
+        message: 'Buku yang dicari tidak ada berdasarkan filter yang diberikan'
+      })
+      response.code(200)
+      return response
+    }
   }
-})
+
+  const response = h.response({
+    status: 'success',
+    data: {
+      books: books.map((book) => (
+        {
+          id: book.id,
+          name: book.name,
+          publisher: book.publisher
+        }
+      ))
+    }
+  })
+  response.code(200)
+  return response
+}
 
 const getBukuByIdHandler = (request, h) => {
   const { bookId } = request.params
@@ -187,4 +278,31 @@ const updateBukuByIdHandler = (request, h) => {
   return response
 }
 
-module.exports = { addBukuHandler, getAllBukuHandler , getBukuByIdHandler, updateBukuByIdHandler}
+const deleteBukuByIdHandler = (request, h) => {
+  const { bookId } = request.params
+
+  const index = books.findIndex((note) => note.id === bookId)
+
+  if (index === -1) {
+    const response = h.response({
+      status: 'fail',
+      message: 'Buku gagal dihapus. Id tidak ditemukan'
+    })
+    response.code(404)
+    return response
+  }
+
+  books.splice(index, 1)
+  const response = h.response({
+    status: 'success',
+    message: 'Buku berhasil dihapus'
+  })
+  response.code(200)
+  return response
+}
+
+const getAllBukuWithFilterSearchEror = (request, h) => {
+
+}
+
+module.exports = { addBukuHandler, getAllBukuHandler , getBukuByIdHandler, updateBukuByIdHandler, deleteBukuByIdHandler}
